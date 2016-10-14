@@ -8,5 +8,5 @@ setup(
     license='BSD',
     author='Pablo Torres Carreira',
     author_email='pablotcarreira@gmail.com',
-    description='Django database backend for ArangoDB '
+    description='Django database backend for ArangoDB ', requires=['django']
 )
