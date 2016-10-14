@@ -2,24 +2,24 @@ from django.db.models import Model as DjangoModel
 from .manager import Manager
 
 
-class BaseGraphModel(DjangoModel):
+class DocumentModel(DjangoModel):
     objects = Manager()
-    model_type = 'graph'
+    model_type = 'arangodb_document'
 
     class Meta:
         abstract = True
         required_db_vendor = 'arangodb'
 
 
-class NodeModel(BaseGraphModel):
-    model_type = 'node'
+class VertexModel(DocumentModel):
+    model_type = 'arangodb_node'
 
     class Meta:
         abstract = True
 
 
-class EdgeModel(BaseGraphModel):
-    model_type = 'edge'
+class EdgeModel(DocumentModel):
+    model_type = 'arangodb_edge'
 
     class Meta:
         abstract = True
