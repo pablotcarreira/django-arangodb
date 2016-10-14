@@ -1,3 +1,5 @@
 = Django ArangoDB Backend
 
 Provides a Django database backend to use with ArangoDB graph database.
+
+Work in progress. Not working yet.
