@@ -5,19 +5,13 @@ django.setup()
 # Create.
 from sample_app.models import Person, Group
 
+# INSERT
+# joao = Person(name='Joao')
+# a = joao.save()
 
-joao = Person(name='Joao')
-a = joao.save()
-
-
-
-print(a)
-print(joao)
-print(joao.pk)
-print(type(joao.pk))
-
-# TODO: Bulk insert
-
+# GET
+aperson = Person.objects.get(pk='478589')
+print(aperson)
 
 # grupo_patinadores = Group(name='Patinadores')
 #

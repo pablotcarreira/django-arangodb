@@ -138,6 +138,11 @@ class SQLCompiler(compiler.SQLCompiler):
         subclasses such as InsertQuery). It's possible, however, that no query
         is needed, as the filters describe an empty set. In that case, None is
         returned, to avoid any unnecessary database interaction.
+
+        ----
+        # https://docs.arangodb.com/3.0/AQL/Fundamentals/BindParameters.html#bind-parameters
+        ----
+
         """
         if not result_type:
             result_type = NO_RESULTS
@@ -151,7 +156,9 @@ class SQLCompiler(compiler.SQLCompiler):
             else:
                 return
 
-        # https://docs.arangodb.com/3.0/AQL/Fundamentals/BindParameters.html#bind-parameters
+
+        self.connection.ensure_connection()
+
         cursor = self.connection.database.aql.execute(query=sql)
         if result_type == CURSOR:
             # Caller didn't specify a result_type, so just give them back the

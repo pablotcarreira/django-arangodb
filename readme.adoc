@@ -10,3 +10,4 @@ Nice things allowed by ArangoDB that can be implemented.
 
 * Per-document check on bulk inserts.
 * GraphQL single trip subqueries.
+* Extra operators ALL IN, NONE IN, ANY, ALL

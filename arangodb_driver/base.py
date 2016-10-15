@@ -75,6 +75,28 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'object': 'object', # arango
     }
 
+    # https: // docs.arangodb.com / 3.0 / AQL / Operators.html
+    operators = {
+        'exact': '== %s',
+        'iexact': 'LIKE %s',
+        'contains': 'LIKE %s',
+        'icontains': 'LIKE %s',
+        'regex': '=~ %s',
+        'iregex': '=~ %s',
+        'gt': '> %s',
+        'gte': '>= %s',
+        'lt': '< %s',
+        'lte': '<= %s',
+        'startswith': 'LIKE %s',
+        'endswith': 'LIKE %s',
+        'istartswith': 'LIKE %s',
+        'iendswith': 'LIKE %s',
+        # Array Operators:
+        'allin': 'ALL IN %s'}
+
+
+
+
     def _close(self):
         pass
 
