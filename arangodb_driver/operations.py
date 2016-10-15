@@ -12,6 +12,13 @@ from typing import Iterable
 # o toolbox propõe que as conversões de tipos sejam centralizadas.
 # https://www.allbuttonspressed.com/blog/django/2010/04/Writing-a-non-relational-Django-backend
 class DatabaseOperations(BaseDatabaseOperations):
+    """We mai need to implement other methods:
+
+    * combine_expressions.
+
+
+
+    """
     compiler_module = "arangodb_driver.compiler"
 
     def distinct_sql(self, fields: Iterable[str]) -> str:
@@ -31,6 +38,17 @@ class DatabaseOperations(BaseDatabaseOperations):
         #     return 'DISTINCT ON (%s)' % ', '.join(fields)
         # else:
         #     return 'DISTINCT'
+
+    def get_db_converters(self, expression):
+        """
+                Get a list of functions needed to convert field data.
+
+                Some field types on some backends do not provide data in the correct
+                format, this is the hook for converter functions.
+                """
+        # TODO: Implement this for arangoDB
+        return []
+
 
     def max_name_length(self) -> int:
         """Max lenght of collection name."""
@@ -62,21 +80,3 @@ class DatabaseOperations(BaseDatabaseOperations):
         second = datetime.date(value + 1, 1, 1)
         return [first, second]
 
-    def year_lookup_bounds_for_datetime_field(self, value):
-        """
-        Converts year bounds to datetime bounds.
-        """
-        first = datetime.datetime(value, 1, 1, 0, 0, 0, 0)
-        second = datetime.datetime(value + 1, 1, 1, 0, 0, 0, 0)
-        if settings.USE_TZ:
-            tz = timezone.get_current_timezone()
-            first = timezone.make_aware(first, tz)
-            second = timezone.make_aware(second, tz)
-        return [first, second]
-
-    def check_aggregate_support(self, aggregate):
-        """Nonrel back-ends are only expected to implement COUNT in general."""
-        from django.db.models.sql.aggregates import Count
-        if not isinstance(aggregate, Count):
-            raise NotImplementedError("This database does not support %r "
-                                      "aggregates." % type(aggregate))

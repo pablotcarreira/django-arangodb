@@ -1,19 +1,42 @@
 import json
-from warnings import warn
+from typing import List
 
 from django.core.exceptions import EmptyResultSet
 from django.db import DatabaseError
+from django.db.models.expressions import Col
 from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI, NO_RESULTS, CURSOR, SINGLE
 from django.db.transaction import TransactionManagementError
 
 from arangodb_driver.defines import ITEM_ALIAS
-from arangodb_driver.models.query import AQLQuery
+from arangodb_driver.models.aql.query import AQLQuery
+
+
+
+# Patch the Col expression so it returns the column formatted by AQL standards.
+def override_col_as_sql(self, compiler, connection) -> (str, List):
+    """
+    Responsible for returning a (sql, [params]) tuple to be included
+    in the current query.
+
+    Different backends can provide their own implementation, by
+    providing an `as_{vendor}` method and patching the Expression:
+
+    ```
+    def override_as_sql(self, compiler, connection):
+        # custom logic
+        return super(Expression, self).as_sql(compiler, connection)
+    setattr(Expression, 'as_' + connection.vendor, override_as_sql)
+    """
+    qn = compiler.quote_name_unless_alias
+    return "%s.%s" % (ITEM_ALIAS, self.target.column), []
+setattr(Col, 'as_arangodb', override_col_as_sql)
+
+
 
 
 class SQLCompiler(compiler.SQLCompiler):
     query_class = AQLQuery
-    # query = AQLQuery
 
     def as_sql(self, with_limits=True, with_col_aliases=False, subquery=False):
         """
@@ -36,6 +59,12 @@ class SQLCompiler(compiler.SQLCompiler):
             params = []
             result = ['FOR', ITEM_ALIAS, 'IN']
             result.extend(from_)
+
+            # Append the FILTER (sql where).
+            if where:
+                result.append('FILTER %s' % where % w_params[0])  # FIXME: Looks like a hack right now...
+                params.extend(w_params)
+
             result.append('RETURN')
 
             if self.query.distinct:
@@ -81,9 +110,7 @@ class SQLCompiler(compiler.SQLCompiler):
             if for_update_part and self.connection.features.for_update_after_from:
                 result.append(for_update_part)
 
-            if where:
-                result.append('WHERE %s' % where)
-                params.extend(w_params)
+
 
             grouping = []
             for g_sql, g_params in group_by:
@@ -121,7 +148,8 @@ class SQLCompiler(compiler.SQLCompiler):
             if for_update_part and not self.connection.features.for_update_after_from:
                 result.append(for_update_part)
 
-            return ' '.join(result), tuple(params)
+            result = ' '.join(result), tuple(params)
+            return result
         finally:
             # Finally do cleanup - get rid of the joins we created above.
             self.query.reset_refcounts(refcounts_before)

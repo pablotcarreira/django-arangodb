@@ -2,12 +2,7 @@ from django.db import models
 from django.db.models import Model as DjangoModel
 from django.db.models.base import ModelBase
 
-from .manager import Manager
-
-
-
-
-
+from .arangodbmanager import ArangoDBManager
 
 
 # If we want to make the base class more elegant, it's possible
@@ -22,7 +17,7 @@ from .manager import Manager
 
 class DocumentModel(DjangoModel):
     _key = models.AutoField(primary_key=True)
-    objects = Manager()
+    objects = ArangoDBManager()
     model_type = 'arangodb_document'
 
     class Meta:

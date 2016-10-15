@@ -1,5 +1,9 @@
 # Pablo Carreira 2016
+from django.db.models import Field
 
+
+class ArangoDBField(Field):
+    pass
 
 class EdgeField:
     def __init__(self, other_model):
