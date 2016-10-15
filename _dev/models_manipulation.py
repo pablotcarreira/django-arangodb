@@ -7,7 +7,18 @@ from sample_app.models import Person, Group
 
 
 joao = Person(name='Joao')
-joao.save()
+a = joao.save()
+
+
+
+print(a)
+print(joao)
+print(joao.pk)
+print(type(joao.pk))
+
+# TODO: Bulk insert
+
+
 # grupo_patinadores = Group(name='Patinadores')
 #
 #

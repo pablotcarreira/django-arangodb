@@ -7,12 +7,13 @@ from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI, NO_RESULTS, CURSOR, SINGLE
 from django.db.transaction import TransactionManagementError
 
+from arangodb_driver.defines import ITEM_ALIAS
 from arangodb_driver.models.query import AQLQuery
 
 
 class SQLCompiler(compiler.SQLCompiler):
     query_class = AQLQuery
-    query = AQLQuery
+    # query = AQLQuery
 
     def as_sql(self, with_limits=True, with_col_aliases=False, subquery=False):
         """
@@ -22,11 +23,7 @@ class SQLCompiler(compiler.SQLCompiler):
         If 'with_limits' is False, any limit/offset information is not included
         in the query.
         """
-        ITEM_ALIAS = 'item'  # Alias for each item in the 'FOR ITEM_ALIAS IN'..
-
-
         self.subquery = subquery
-
         refcounts_before = self.query.alias_refcount.copy()
 
         try:
@@ -129,7 +126,6 @@ class SQLCompiler(compiler.SQLCompiler):
             # Finally do cleanup - get rid of the joins we created above.
             self.query.reset_refcounts(refcounts_before)
 
-
     def execute_sql(self, result_type=MULTI):
         """
         Run the query against the database and returns the result(s). The
@@ -155,7 +151,6 @@ class SQLCompiler(compiler.SQLCompiler):
             else:
                 return
 
-        # TODO: Ponto onde podem ser inderidas as bind vars:
         # https://docs.arangodb.com/3.0/AQL/Fundamentals/BindParameters.html#bind-parameters
         cursor = self.connection.database.aql.execute(query=sql)
         if result_type == CURSOR:
@@ -190,7 +185,6 @@ class SQLCompiler(compiler.SQLCompiler):
                 cursor.close()
         return result
 
-
     def results_iter(self, results=None):
         """
         Returns an iterator over the results from executing this query.
@@ -206,12 +200,19 @@ class SQLCompiler(compiler.SQLCompiler):
                 yield row
 
 
-
-
 class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
     return_id = True
 
-    def as_sql(self, **kwargs):
+    def execute_sql(self, return_id=True):
+        # Implemented in order to use the universal execute SQL.
+        ids = super().execute_sql(MULTI)
+        if len(ids) == 1:
+            return ids[0]
+        else:
+            return ids
+
+    # noinspection PyMethodOverriding
+    def as_sql(self):
         """Arango INSERT has the following format:
 
             FOR item IN [{"nome":"B"}, {"nome":"C"}]
@@ -222,7 +223,7 @@ class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
         """
         opts = self.query.get_meta()
         collection_name = opts.db_table
-        result = ['FOR item IN']
+        result = ['FOR', ITEM_ALIAS, 'IN']
         has_fields = bool(self.query.fields)
         fields = self.query.fields if has_fields else [opts.pk]
         documents = []
@@ -238,11 +239,8 @@ class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
             documents.append('{}')
         # Complete the query statement.
         result.append(json.dumps(documents))
-        result.extend(('INSERT item IN', collection_name, 'RETURN NEW._key'))
+        result.extend(('INSERT', ITEM_ALIAS, 'IN', collection_name, 'RETURN NEW._key'))
         # All inserts return ids, for this on the class because I don't know if Django uses it.
-        self.return_id = True
+        # self.return_id = True
         # Empty params in this case.
         return " ".join(result), ()
-
-
-
