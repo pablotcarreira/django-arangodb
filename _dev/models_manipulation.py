@@ -11,7 +11,7 @@ from sample_app.models import Person, Group
 
 # GET
 aperson = Person.objects.get(pk='478589')
-print(aperson)
+print(aperson.name)
 
 # grupo_patinadores = Group(name='Patinadores')
 #

@@ -82,6 +82,6 @@ def test_start_django_app():
     django.setup()
 
 
-def test_make_migrations():
-    call_command('makemigrations')
+# def test_make_migrations():
+#     call_command('makemigrations')
 

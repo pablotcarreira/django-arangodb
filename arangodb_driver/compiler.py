@@ -3,6 +3,8 @@ from typing import List
 
 from django.core.exceptions import EmptyResultSet
 from django.db import DatabaseError
+from django.db import IntegrityError
+from django.db.models import NOT_PROVIDED
 from django.db.models.expressions import Col
 from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI, NO_RESULTS, CURSOR, SINGLE
@@ -28,7 +30,6 @@ def override_col_as_sql(self, compiler, connection) -> (str, List):
         return super(Expression, self).as_sql(compiler, connection)
     setattr(Expression, 'as_' + connection.vendor, override_as_sql)
     """
-    qn = compiler.quote_name_unless_alias
     return "%s.%s" % (ITEM_ALIAS, self.target.column), []
 setattr(Col, 'as_arangodb', override_col_as_sql)
 
@@ -62,7 +63,7 @@ class SQLCompiler(compiler.SQLCompiler):
 
             # Append the FILTER (sql where).
             if where:
-                result.append('FILTER %s' % where % w_params[0])  # FIXME: Looks like a hack right now...
+                result.append('FILTER %s ' % where % '"%s"' % w_params[0])  # FIXME: Looks like a hack right now...
                 params.extend(w_params)
 
             result.append('RETURN')
@@ -220,19 +221,35 @@ class SQLCompiler(compiler.SQLCompiler):
                 cursor.close()
         return result
 
+    def _make_result(self, entity, fields):
+        """
+        Decodes values for the given fields from the database entity.
+
+        The entity is assumed to be a dict using field database column
+        names as keys. Decodes values using `value_from_db` as well as
+        the standard `convert_values`.
+        """
+        result = []
+        for field in fields:
+            value = entity.get(field.target.column, None)
+            result.append(value)
+        return result
+
     def results_iter(self, results=None):
-        """
-        Returns an iterator over the results from executing this query.
-        """
+        # Results are dictionaries and we can't trust the order of the fields. This part deal with that.
         if results is None:
             results = self.execute_sql(MULTI)
         fields = [s[0] for s in self.select[0:self.col_count]]
+        new_result = []
+        for item in results:
+            new_result.append(self._make_result(item, fields))
+
+        # Now we return to the default django execution.
         converters = self.get_converters(fields)
-        for rows in results:
-            for row in rows:
-                if converters:
-                    row = self.apply_converters(row, converters)
-                yield row
+        for row in new_result:
+            if converters:
+                row = self.apply_converters(row, converters)
+            yield row
 
 
 class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
