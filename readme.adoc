@@ -22,8 +22,16 @@ Provides a Django database backend to use with ArangoDB graph database.
 
 
 == Ideas
-Nice things allowed by ArangoDB that can be implemented.
+Nice things allowed by ArangoDB that can be implemented:
 
 * Per-document check on bulk inserts.
 * GraphQL single trip subqueries.
 * Extra operators ALL IN, NONE IN, ANY, ALL
+
+Other ideas:
+
+* Custom driver (it uses python-arango).
+* Graphql endpoint.
+* Templates.
+* Graphviz output.
+
