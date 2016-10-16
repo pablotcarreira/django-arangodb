@@ -13,7 +13,9 @@ Provides a Django database backend to use with ArangoDB graph database.
 - [x] DELETE.
 - [ ] bulk DELETE.
 - [ ] UPDATE.
-- [ ] Relations
+- [ ] Relations.
+- [ ] Migrations (some work done, waiting for relations).
+- [ ] Dajngo.contrib (waiting for migrations).
 - [ ] ...
 
 
