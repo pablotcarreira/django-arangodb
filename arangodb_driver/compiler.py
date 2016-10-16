@@ -34,9 +34,7 @@ def override_col_as_sql(self, compiler, connection) -> (str, List):
 setattr(Col, 'as_arangodb', override_col_as_sql)
 
 
-def quote_params(params: List[str]) -> List[str]:
-    """Quote a list of parameters."""
-    return ['"' + str(i) + '"' for i in params]
+
 
 class SQLCompiler(compiler.SQLCompiler):
     query_class = AQLQuery

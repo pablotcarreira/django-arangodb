@@ -2,7 +2,7 @@ import os
 
 from django.db import models
 
-from arangodb_driver.models.fields import FromField, ToField, CharField
+from arangodb_driver.models.fields import FromField, ToField, CharField, AutoField
 from arangodb_driver.models.models import VertexModel, EdgeModel
 
 # M2M Through

@@ -32,19 +32,19 @@ def test_get():
 
 
 def test_filter_simple():
-    Person(name='Eggs', age=30).save()
-    Person(name='Eggs', age=31).save()
-    Person(name='Eggs', age=32).save()
+    # Person(name='Eggs', age=30).save()
+    # Person(name='Eggs', age=31).save()
+    # Person(name='Eggs', age=32).save()
     queryset_a = Person.objects.filter(name='Eggs')
     assert isinstance(queryset_a, AQLQuerySet)
     assert len(queryset_a) >= 3
 
 
 def test_filter_kwargs():
-    ages = [30, 31, 31]
-    for age in ages:
-        a = Person(name='Eggs', age=age)
-        a.save()
+    # ages = [30, 31, 31]
+    # for age in ages:
+    #     a = Person(name='Eggs', age=age)
+    #     a.save()
     queryset_b = Person.objects.filter(name='Eggs', age=31)
     assert isinstance(queryset_b, AQLQuerySet)
     assert len(queryset_b) >= 2
@@ -52,10 +52,12 @@ def test_filter_kwargs():
         print(item.name)
 
 
-
-@pytest.mark.skip(reason="not implemented yet")
 def test_filter_chaining():
-    raise NotImplementedError
+    queryset_b = Person.objects.filter(name='Eggs').filter(age=31)
+    assert isinstance(queryset_b, AQLQuerySet)
+    assert len(queryset_b) >= 2
+    for item in queryset_b:
+        print(item.name)
 
 
 @pytest.mark.skip(reason="not implemented yet")
@@ -74,4 +76,4 @@ def test_bulk_delete():
 
 
 if __name__ == '__main__':
-    test_filter_kwargs()
+    test_get()

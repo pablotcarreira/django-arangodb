@@ -1,7 +1,7 @@
 from django.db import models
-from django.db.models import Model as DjangoModel
 from django.db.models.base import ModelBase
 
+from arangodb_driver.models.fields import AutoField
 from .arangodbmanager import ArangoDBManager
 
 
@@ -15,8 +15,8 @@ from .arangodbmanager import ArangoDBManager
 
 
 
-class DocumentModel(DjangoModel):
-    _key = models.AutoField(primary_key=True)
+class DocumentModel(models.Model):
+    _key = AutoField(primary_key=True)
     objects = ArangoDBManager()
     model_type = 'arangodb_document'
 
