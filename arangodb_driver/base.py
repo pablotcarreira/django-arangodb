@@ -73,6 +73,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'DecimalField': 'numeric(%(max_digits)s, %(decimal_places)s)',
         'array': 'array',  # arango
         'object': 'object', # arango
+        'IntegerField': 'integer'
     }
 
     # https: // docs.arangodb.com / 3.0 / AQL / Operators.html

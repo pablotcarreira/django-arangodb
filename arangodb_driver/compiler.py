@@ -34,10 +34,15 @@ def override_col_as_sql(self, compiler, connection) -> (str, List):
 setattr(Col, 'as_arangodb', override_col_as_sql)
 
 
-
+def quote_params(params: List[str]) -> List[str]:
+    """Quote a list of parameters."""
+    return ['"' + str(i) + '"' for i in params]
 
 class SQLCompiler(compiler.SQLCompiler):
     query_class = AQLQuery
+
+
+
 
     def as_sql(self, with_limits=True, with_col_aliases=False, subquery=False):
         """
@@ -63,7 +68,13 @@ class SQLCompiler(compiler.SQLCompiler):
 
             # Append the FILTER (sql where).
             if where:
-                result.append('FILTER %s ' % where % '"%s"' % w_params[0])  # FIXME: Looks like a hack right now...
+                result.append('FILTER')
+                # quoted_params = quote_params(w_params)
+                # where_partial = where % tuple(quoted_params)
+                where_partial = where % tuple(w_params)
+                result.append(where_partial)
+
+                # result.append('FILTER %s ' % where % '"%s"' % w_params[0])  # FIXME: Looks like a hack right now...
                 params.extend(w_params)
 
             result.append('RETURN')
@@ -295,4 +306,6 @@ class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
         # All inserts return ids, for this on the class because I don't know if Django uses it.
         # self.return_id = True
         # Empty params in this case.
-        return " ".join(result), ()
+        result = " ".join(result)
+
+        return result, ()
