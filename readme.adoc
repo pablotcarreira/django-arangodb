@@ -2,7 +2,21 @@
 
 Provides a Django database backend to use with ArangoDB graph database.
 
-Work in progress. Not working yet.
+== Progress
+- [x] _key as Pk.
+- [x] Backend structure.
+- [x] INSERT.
+- [ ] bulk INSERT (need testing).
+- [x] GET.
+- [x] FILTER (single attribute, multiple attibutes, chaining).
+- [x] FILTER - lookups.
+- [x] DELETE.
+- [ ] bulk DELETE.
+- [ ] UPDATE.
+- [ ] Relations
+- [ ] ...
+
+
 
 
 == Ideas
