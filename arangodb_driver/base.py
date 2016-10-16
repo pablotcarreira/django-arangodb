@@ -78,6 +78,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
     # https: // docs.arangodb.com / 3.0 / AQL / Operators.html
     operators = {
+        'in': 'IN [%s]',
         'exact': '== %s',
         'iexact': 'LIKE %s',
         'contains': 'LIKE %s',

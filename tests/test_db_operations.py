@@ -61,13 +61,29 @@ def test_filter_chaining():
 
 
 @pytest.mark.skip(reason="not implemented yet")
-def test_filter_operators():
-    raise NotImplementedError
+def test_delete_model():
+    queryset = Person.objects.filter(name='Eggs', age=31)
+    len_a = len(queryset)
+    queryset[0].delete()
+    # Refetch to make sure that its updated.
+    queryset = Person.objects.filter(name='Eggs', age=31)
+    len_b = len(queryset)
+    print(len_a)
+    print(len_b)
+    assert len_a > len_b
 
 
 @pytest.mark.skip(reason="not implemented yet")
-def test_delete():
-    pass
+def test_delete_queryset():
+    queryset = Person.objects.filter(name='Eggs', age=31)
+    len_a = len(queryset)
+    queryset[0].delete()
+    # Refetch to make sure that its updated.
+
+
+@pytest.mark.skip(reason="not implemented yet")
+def test_filter_operators():
+    raise NotImplementedError
 
 
 @pytest.mark.skip(reason="not implemented yet")
@@ -76,4 +92,4 @@ def test_bulk_delete():
 
 
 if __name__ == '__main__':
-    test_get()
+    test_delete_model()

@@ -39,9 +39,6 @@ setattr(Col, 'as_arangodb', override_col_as_sql)
 class SQLCompiler(compiler.SQLCompiler):
     query_class = AQLQuery
 
-
-
-
     def as_sql(self, with_limits=True, with_col_aliases=False, subquery=False):
         """
         Creates the SQL for this query. Returns the SQL string and list of
@@ -120,8 +117,6 @@ class SQLCompiler(compiler.SQLCompiler):
             if for_update_part and self.connection.features.for_update_after_from:
                 result.append(for_update_part)
 
-
-
             grouping = []
             for g_sql, g_params in group_by:
                 grouping.append(g_sql)
@@ -194,14 +189,15 @@ class SQLCompiler(compiler.SQLCompiler):
             else:
                 return
 
-
         self.connection.ensure_connection()
-
         cursor = self.connection.database.aql.execute(query=sql)
         if result_type == CURSOR:
-            # Caller didn't specify a result_type, so just give them back the
-            # cursor to process (and close).
+
+            # FIXME: For now, we need to return a fake cursor. A more elegant solution wold be to reimplement a compliant cursor.
+            # FIXME: Or, we could move this to the SQLDeleteQuery...
+            cursor.rowcount = len(cursor._data['result'])
             return cursor
+
         if result_type == SINGLE:
             try:
                 return cursor.next()
@@ -307,3 +303,37 @@ class SQLInsertCompiler(SQLCompiler, compiler.SQLInsertCompiler):
         result = " ".join(result)
 
         return result, ()
+
+
+class SQLDeleteCompiler(SQLCompiler):
+    # noinspection PyMethodOverriding
+    def as_sql(self):
+        """
+        Creates the SQL for this query. Returns the SQL string and list of
+        parameters.
+
+        # Multiple
+        FOR user IN users
+            FILTER user.active == 1
+            REMOVE user IN users
+
+        # Single
+        REMOVE { _key:"1" }
+            IN users
+
+        """
+        assert len([t for t in self.query.tables if self.query.alias_refcount[t] > 0]) == 1, \
+            "Can only delete from one table at a time."
+        collection_name = self.query.tables[0]
+        result = ['FOR', ITEM_ALIAS, 'IN', collection_name]
+        where, w_params = self.compile(self.query.where)
+
+        if where:
+            # AragoDb use square braquets for lists.
+            where = where.replace("(%s)", "[%s]")
+            result.append('FILTER')
+            result.append(where % tuple(w_params))
+        result.extend(('REMOVE', ITEM_ALIAS, 'IN', collection_name))
+        result.extend(('RETURN', 'OLD._key'))
+        return ' '.join(result), tuple(w_params)
+
