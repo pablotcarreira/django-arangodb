@@ -2,7 +2,7 @@ import os
 
 from django.db import models
 
-from arangodb_driver.models.fields import FromField, ToField, CharField, AutoField
+from arangodb_driver.models.fields import FromField, ToField, CharField, ManyToMany
 from arangodb_driver.models.models import VertexModel, EdgeModel
 
 # M2M Through
@@ -14,10 +14,11 @@ from arangodb_driver.models.models import VertexModel, EdgeModel
 class Person(VertexModel):
     name = CharField(max_length=150)
     age = models.IntegerField()
+    groups = ManyToMany(to='Group')
 
 
 class Group(VertexModel):
-    name = models.CharField(max_length=150)
+    name = CharField(max_length=150)
 
 
 class Belongs(EdgeModel):

@@ -6,6 +6,7 @@ def quote_string(value: str) -> str:
     """Quote a string in order to compose an AQL query."""
     return '"' + str(value) + '"'
 
+
 class IntegerField(models.IntegerField):
     pass
 
@@ -18,7 +19,6 @@ class AutoField(models.AutoField):
         else:
             value = quote_string(value)
         return value
-
 
 
 class CharField(models.CharField):
@@ -40,4 +40,8 @@ class FromField(EdgeField):
 
 
 class ToField(EdgeField):
+    pass
+
+
+class ManyToMany(models.ManyToManyField):
     pass
