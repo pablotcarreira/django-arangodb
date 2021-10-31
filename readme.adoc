@@ -2,6 +2,8 @@
 
 Provides a Django database backend to use with ArangoDB graph database.
 
+Take a look a this other project: https://github.com/timothygraefe/djarango.git
+
 == Progress
 - [x] _key as Pk.
 - [x] Backend structure.
